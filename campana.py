@@ -9,6 +9,7 @@ import sys                  # (se usa para atrapar SIGINT(ctrl-c))
 import os                   # Librería cosas SO
 import random               # Librería cosas random (Estas dos se usan para coger el fichero random desde el directorio)
 from mutagen.mp3 import MP3 # Librería metadatos de audios, sólo mp3 en mi caso
+import re                   # Librería expresiones regulares
 
 #################
 #   Constantes  #
@@ -40,37 +41,43 @@ class Campana():
     # Función ejecutar campana
     def ejecutar(self):
 
-            # Bucle infinito
-            while True:
+        # Comprobar si la lista de horas está vacía
+        regex_pattern = '^\d+ ?: ?\d+$'
+        if (self.tiempo == False or re.match(regex_pattern, str(self.tiempo[:1])) == False or str(self.tiempo[:1]) == "[]"):
+            print("La lista de horas está vacía")
+            sys.exit(1)
 
-                # Atrapar señales SIGINT
-                signal.signal(signal.SIGINT, signal_handler)
+        # Bucle infinito
+        while True:
 
-                # Comprobar si es hora de la campana, si es así hacerla sonar
-                ahora = time.localtime()
-                tiempo = str(ahora.tm_hour) + " : " + str(ahora.tm_min)
-                if (tiempo in self.tiempo):
-                    # Coge la canción random
-                    cancion = random.choice(os.listdir(DIRECTORIO))
-                    # Si el tiempo de reproducción excede a la duración de la canción hacer que sólo se reproduzca la duración
-                    cancion_meta = MP3(DIRECTORIO + cancion)
-                    if (self.tiempo_reproduccion > cancion_meta.info.length):
-                        self.tiempo_reproduccion = cancion_meta.info.length + 1
-                    # Suena la canción
-                    print("\n\nCampana sonando a las: " + tiempo + "\nCon la canción: " + str(cancion) + "\ny duración de reproducción de: " + str(self.tiempo_reproduccion) + "s\n\n")
-                    pygame.mixer.init()
-                    musica = pygame.mixer.Sound(DIRECTORIO + cancion)
-                    musica.play()
-                    time.sleep(self.tiempo_reproduccion-(int(self.fadeout/1000)))
-                    musica.fadeout(self.fadeout)
-                    # Recordatorio cuándo suenan las campanas
-                    print("\n\nLas campanas suenan a las: \n")
-                    print(*self.tiempo, sep = ", ")
-                    print("\n\n")
-                    # Dormir un minuto entre campanas si dura menos de un minuto la reproducción, si no se ejecuta varias veces
-                    # ya que cumple la condición del if de nuevo.
-                    if (self.tiempo_reproduccion < 60):
-                        time.sleep(65 - self.tiempo_reproduccion) # Tiene 5s más de margen por los redondeos
+            # Atrapar señales SIGINT
+            signal.signal(signal.SIGINT, signal_handler)
+
+            # Comprobar si es hora de la campana, si es así hacerla sonar
+            ahora = time.localtime()
+            tiempo = str(ahora.tm_hour) + " : " + str(ahora.tm_min)
+            if (tiempo in self.tiempo):
+                # Coge la canción random
+                cancion = random.choice(os.listdir(DIRECTORIO))
+                # Si el tiempo de reproducción excede a la duración de la canción hacer que sólo se reproduzca la duración
+                cancion_meta = MP3(DIRECTORIO + cancion)
+                if (self.tiempo_reproduccion > cancion_meta.info.length):
+                    self.tiempo_reproduccion = cancion_meta.info.length + 1
+                # Suena la canción
+                print("\n\nCampana sonando a las: " + tiempo + "\nCon la canción: " + str(cancion) + "\ny duración de reproducción de: " + str(self.tiempo_reproduccion) + "s\n\n")
+                pygame.mixer.init()
+                musica = pygame.mixer.Sound(DIRECTORIO + cancion)
+                musica.play()
+                time.sleep(self.tiempo_reproduccion-(int(self.fadeout/1000)))
+                musica.fadeout(self.fadeout)
+                # Recordatorio cuándo suenan las campanas
+                print("\n\nLas campanas suenan a las: \n")
+                print(*self.tiempo, sep = ", ")
+                print("\n\n")
+                # Dormir un minuto entre campanas si dura menos de un minuto la reproducción, si no se ejecuta varias veces
+                # ya que cumple la condición del if de nuevo.
+                if (self.tiempo_reproduccion < 60):
+                    time.sleep(65 - self.tiempo_reproduccion) # Tiene 5s más de margen por los redondeos
 
 
 #########################
