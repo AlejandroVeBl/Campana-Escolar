@@ -42,8 +42,8 @@ class Campana():
     def ejecutar(self):
 
         # Comprobar si la lista de horas está vacía
-        regex_pattern = '^\d+ ?: ?\d+$'
-        if (self.tiempo == False or re.match(regex_pattern, str(self.tiempo[:1])) == False or str(self.tiempo[:1]) == "[]"):
+        tiempo_regex_pattern = '^\d+ ?: ?\d+$'
+        if (self.tiempo == False or re.match(tiempo_regex_pattern, str(self.tiempo[:1])) == False or str(self.tiempo[:1]) == "[]"):
             print("La lista de horas está vacía")
             sys.exit(1)
 
@@ -53,12 +53,21 @@ class Campana():
             # Atrapar señales SIGINT
             signal.signal(signal.SIGINT, signal_handler)
 
+            # Comprobar que haya al menos una canción .mp3
+            if not any(fname.endswith('.mp3') for fname in os.listdir(DIRECTORIO)):
+                print("No hay ningún archivo mp3 en el directorio: " + DIRECTORIO)
+                sys.exit(2)
+
             # Comprobar si es hora de la campana, si es así hacerla sonar
             ahora = time.localtime()
             tiempo = str(ahora.tm_hour) + " : " + str(ahora.tm_min)
             if (tiempo in self.tiempo):
                 # Coge la canción random
                 cancion = random.choice(os.listdir(DIRECTORIO))
+                # Coger canciones hasta que se tenga una que acabe en mp3
+                extension_regex_pattern = '\d*.mp3$'
+                while (re.match(str(cancion), extension_regex_pattern) == False):
+                    cancion = random.choice(os.listdir(DIRECTORIO))
                 # Si el tiempo de reproducción excede a la duración de la canción hacer que sólo se reproduzca la duración
                 cancion_meta = MP3(DIRECTORIO + cancion)
                 if (self.tiempo_reproduccion > cancion_meta.info.length):
