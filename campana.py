@@ -65,7 +65,6 @@ class Campana():
                 # Coge la canción random
                 cancion = random.choice(os.listdir(DIRECTORIO))
                 # Coger canciones hasta que se tenga una que acabe en mp3
-                while (re.match(str(cancion), extension_regex_pattern) == False):
                 while (not cancion.endswith(".mp3")):
                     cancion = random.choice(os.listdir(DIRECTORIO))
                 # Si el tiempo de reproducción excede a la duración de la canción hacer que sólo se reproduzca la duración
